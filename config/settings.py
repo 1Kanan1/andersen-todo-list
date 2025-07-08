@@ -29,6 +29,8 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    # apps
+    "users",
     # 3rd-party libraries
     "rest_framework",
 ]
@@ -94,6 +96,8 @@ DATABASES = {
         }
     )
 }
+
+AUTH_USER_MODEL = "users.CustomUser"
 
 
 AUTH_PASSWORD_VALIDATORS = [
