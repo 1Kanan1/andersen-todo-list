@@ -8,6 +8,12 @@ from .serializers import TaskSerializer
 
 
 class TaskListCreateView(generics.ListCreateAPIView):
+    """
+    GET     /tasks/                       –> List all tasks (paginated)
+    GET     /tasks/?status=New            –> Filter tasks by status
+    POST    /tasks/                       –> Create a task (user = request.user)
+    """
+
     serializer_class = TaskSerializer
     filterset_fields = ["status"]
     filter_backends = [DjangoFilterBackend]
@@ -21,10 +27,16 @@ class TaskListCreateView(generics.ListCreateAPIView):
 
 
 class TaskDetailView(generics.RetrieveUpdateDestroyAPIView):
+    """
+    GET     /tasks/<int:pk>/              –> Retrieve specific task
+    PUT     /tasks/<int:pk>/              –> Update task (owner-only)
+    DELETE  /tasks/<int:pk>/              –> Delete task (owner-only)
+    """
+
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
     permission_classes = [IsAuthenticated, IsOwner]
 
-    # Allow for partial updates for PUT
+    # Allow for partial updates for PUT (e.g., {"status": 'Completed'})
     def put(self, request, *args, **kwargs):
         return self.partial_update(request, *args, **kwargs)
