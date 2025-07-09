@@ -12,6 +12,7 @@ A minimal Django + DRF backend for personal task management with JWT auth.
 - **JWT Auth (SimpleJWT)**
 - **Docker + Docker Compose**
 - **pytest + pytest-django**
+- **django-environ**
 
 ---
 
@@ -63,7 +64,8 @@ Registers a new user.
 }
 ```
 
-> Note: `last_name` is optional
+> [!note]
+> Here, `last_name` is optional
 
 #### `POST /api/token/`
 
@@ -120,6 +122,9 @@ Updates a task (e.g., to mark as completed).
   "status": "Completed"
 }
 ```
+
+> [!note]
+> Operation supports partial update (e.g., you can specify only `status`)
 
 #### `DELETE /tasks/<int:pk>/`
 
