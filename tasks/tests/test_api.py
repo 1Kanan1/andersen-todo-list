@@ -103,3 +103,15 @@ def test_filter_task_status(api_client, token2, task3, task4):
     response_completed = api_client.get("/tasks/?status=Completed")
     assert response_completed.status_code == status.HTTP_200_OK
     assert response_completed.data["count"] == 0
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("page", [_ for _ in range(1, 4)])
+def test_tasks_pagination(api_client, token1, pagination, page):
+    """Test tasks pagination"""
+
+    api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token1}")
+
+    response = api_client.get(f"/tasks/?page={page}")
+    assert response.status_code == status.HTTP_200_OK
+    assert len(response.data["results"]) <= 10

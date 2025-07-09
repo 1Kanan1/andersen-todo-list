@@ -96,3 +96,13 @@ def task4(user2):
     return Task.objects.create(
         title="Task 4", description="Test", status="In Progress", user_id=user2
     )
+
+
+@pytest.fixture
+def pagination(user1):
+    tasks = [
+        Task(title=f"Task {index}", description="Test", status="New", user_id=user1)
+        for index in range(30)
+    ]
+
+    Task.objects.bulk_create(tasks)
