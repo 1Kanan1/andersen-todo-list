@@ -9,7 +9,6 @@ env = environ.Env(
     DEBUG=(bool, False),
     SECRET_KEY=(str, get_random_secret_key()),
     ALLOWED_HOSTS=(list, []),
-    DJANGO_POSTGRES=(bool, False),
 )
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,6 +19,7 @@ environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 SECRET_KEY = env("SECRET_KEY")  # https://djecrety.ir/
 DEBUG = env("DEBUG")
 ALLOWED_HOSTS = env("ALLOWED_HOSTS")
+print(DEBUG)
 
 
 INSTALLED_APPS = [
@@ -85,21 +85,14 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 
 DATABASES = {
-    "default": (
-        {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": env("POSTGRES_DB"),
-            "USER": env("POSTGRES_USER"),
-            "PASSWORD": env("POSTGRES_PASSWORD"),
-            "HOST": env("POSTGRES_HOST"),
-            "PORT": env("POSTGRES_PORT"),
-        }
-        if env("DJANGO_POSTGRES")
-        else {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "db.sqlite3",
-        }
-    )
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": env("POSTGRES_DB"),
+        "USER": env("POSTGRES_USER"),
+        "PASSWORD": env("POSTGRES_PASSWORD"),
+        "HOST": env("POSTGRES_HOST"),
+        "PORT": env("POSTGRES_PORT"),
+    }
 }
 
 AUTH_USER_MODEL = "users.CustomUser"
