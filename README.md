@@ -111,6 +111,10 @@ Creates a new task.
 }
 ```
 
+#### `GET /tasks/?page=<int>`
+
+Gets paginated list of tasks (`PAGE_LIMIT = 10`)
+
 #### `PUT /tasks/<int:pk>/`
 
 Updates a task (e.g., to mark as completed).
