@@ -139,7 +139,7 @@ Deletes a task
 ## 🐳 Run with Docker
 
 ```bash
-docker-compose up --build
+docker compose up --build
 ```
 
 Then visit: [http://localhost:8000](http://localhost:8000)
@@ -151,7 +151,7 @@ Then visit: [http://localhost:8000](http://localhost:8000)
 **With Docker:**
 
 ```bash
-docker-compose -f compose.test.yml run --rm test
+docker compose -f compose.test.yml run --rm test
 ```
 
 **Or Locally:**
