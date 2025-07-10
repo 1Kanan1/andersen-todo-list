@@ -179,7 +179,9 @@ POSTGRES_PORT=5432
 ```
 
 > [!note]
-> You can either remove `SECRET_KEY` or use [djecrety.ir](https://djecrety.ir/) to generate it
+>
+> 1. You can either remove `SECRET_KEY` or use [djecrety.ir](https://djecrety.ir/) to generate it
+> 2. Set `0.0.0.0` in `ALLOWED_HOSTS` to run **Docker** (or `127.0.0.1` for **manual setup**)
 
 ---
 
