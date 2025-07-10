@@ -179,7 +179,7 @@ POSTGRES_PORT=5432
 ```
 
 > [!note]
-> You can leave `SECRET_KEY` empty, or use [djecrety.ir](https://djecrety.ir/) to generate it
+> You can either remove `SECRET_KEY` or use [djecrety.ir](https://djecrety.ir/) to generate it
 
 ---
 
