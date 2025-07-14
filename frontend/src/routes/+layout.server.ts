@@ -3,6 +3,11 @@ import { redirect } from "@sveltejs/kit";
 import { NODE_ENV, VITE_API_BASE_URL } from "$env/static/private";
 
 export const load: LayoutServerLoad = async ({ cookies, url }) => {
+  // Avoid processing tokens for auth routes
+  if (url.pathname.startsWith("/auth")) {
+    return {};
+  }
+
   const token = cookies.get("access_token");
 
   if (token) {
@@ -18,7 +23,7 @@ export const load: LayoutServerLoad = async ({ cookies, url }) => {
     });
 
     if (response.ok) {
-      const { access, refresh } = await response.json();
+      const { access } = await response.json();
       cookies.set("access_token", access, {
         httpOnly: true,
         path: "/",
@@ -32,7 +37,7 @@ export const load: LayoutServerLoad = async ({ cookies, url }) => {
 
   cookies.delete("refresh_token", { path: "/" });
 
-  if (url.pathname !== "/auth") {
-    throw redirect(303, "/auth");
+  if (!url.pathname.startsWith("/auth")) {
+    throw redirect(303, "/auth/login");
   }
 };

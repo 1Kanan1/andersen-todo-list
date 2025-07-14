@@ -17,7 +17,7 @@ include_trailing_comma = true
 use_parentheses = true
 
 # Use 2 spaces for the HTML files
-[*.html]
+[*.html, *.{js,ts,svelte}]
 indent_size = 2
 
 # Minified JavaScript files shouldn't be changed

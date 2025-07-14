@@ -24,6 +24,10 @@ export async function request(
     body: data ? JSON.stringify(data) : undefined,
   });
 
+  if (response.status === 204) {
+    return null;
+  }
+
   if (!response.ok) {
     const error = await response.json().catch(() => ({}));
     throw new Error(JSON.stringify(error));
@@ -72,10 +76,17 @@ export async function createTask(
   return request("POST", "/tasks/", cookies, data);
 }
 
-export async function getTasks(cookies: Cookies, status?: string) {
-  const endpoint = status
-    ? `/tasks/?status=${encodeURIComponent(status)}`
-    : "/tasks/";
+export async function getTasks(
+  cookies: Cookies,
+  params: {
+    page: number;
+    status?: "New" | "In Progress" | "Completed" | "All";
+  },
+) {
+  const endpoint =
+    params.status !== "All"
+      ? `/tasks/?page=${params.page}&status=${params.status}`
+      : `/tasks/?page=${params.page}`;
   return request("GET", endpoint, cookies);
 }
 

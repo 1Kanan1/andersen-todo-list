@@ -1,32 +1,39 @@
 # 📝 Andersen TODO List
 
-A minimal Django + DRF backend for personal task management with JWT auth.
+A minimal Django + DRF backend for personal task management with JWT auth — now with a modern SvelteKit frontend.
 
 ---
 
 ## ⚙️ Tech Stack
 
-- **Django 5.2**
+- **Django 5.2**
 - **Django REST Framework**
 - **PostgreSQL**
 - **JWT Auth (SimpleJWT)**
 - **Docker + Docker Compose**
+- **Gunicorn** (production-ready HTTP server)
 - **pytest + pytest-django**
 - **django-environ**
+- **django-cors-headers**
+- **SvelteKit + TypeScript + Bun**
+- **iconify/svelte**, **shadcn‑svelte**, and **bits‑ui** for UI components
+- **Light/Dark** mode support
 
 ---
 
 ## 🚀 Features
 
-| Feature            | Description                                                    |
-| ------------------ | -------------------------------------------------------------- |
-| 🔐 JWT Auth        | Register, login, refresh tokens                                |
-| 👤 User Accounts   | Custom user model, separate app                                |
-| ✅ Task CRUD       | Create, read, update, delete tasks with owner-only permissions |
-| 📊 Filter & Status | Filter tasks by `"New"`, `"In Progress"`, `"Completed"`        |
-| 📄 Pagination      | DRF pagination enabled on task list                            |
-| 🐳 Docker Support  | Dev & test containers via Docker Compose                       |
-| 🧪 Test Suite      | `pytest` for both apps, tests are runnable inside Docker       |
+| Feature            | Description                                             |
+| ------------------ | ------------------------------------------------------- |
+| 🔐 JWT Auth        | Register, login, refresh tokens (access & refresh)      |
+| 👤 User Accounts   | Custom user model, separate app                         |
+| ✅ Task CRUD       | Create, read, update, delete tasks (owner-only)         |
+| 📊 Filter & Status | Filter tasks by `"New"`, `"In Progress"`, `"Completed"` |
+| 📄 Pagination      | DRF pagination (`PAGE_LIMIT = 10`)                      |
+| 🌐 Svelte Frontend | Fully SSR-capable frontend with secure HttpOnly cookies |
+| 🎨 UI Components   | Built with shadcn‑svelte & bits‑ui                      |
+| 🐳 Docker Support  | Dev & test containers                                   |
+| 🧪 Test Suite      | `pytest` for backend (also runnable inside Docker)      |
 
 ---
 
@@ -37,7 +44,7 @@ A minimal Django + DRF backend for personal task management with JWT auth.
 ├── config/             # Django settings, URLs, ASGI/WGI
 ├── tasks/              # Task model, views, permissions, tests
 ├── users/              # Custom user model, registration, tests
-├── .env.example        # Sample env vars
+├── frontend/           # SvelteKit frontend app
 ├── docker-compose.yml  # Dev container setup
 ├── compose.test.yml    # Test container setup
 ├── Dockerfile
@@ -48,6 +55,25 @@ A minimal Django + DRF backend for personal task management with JWT auth.
 ---
 
 ## 🔑 API Overview
+
+```sh
+# 1. Log in to get JWT tokens
+curl -X POST http://localhost:8000/api/token/ \
+  -H "Content-Type: application/json" \
+  -d '{"username":"johndoe","password":"jdoe123"}'
+
+# Suppose it returns:
+# {"access": "...", "refresh": "..."}
+
+# 2. Use the access token to GET tasks (paginated):
+curl -X GET http://localhost:8000/tasks/?page=1 \
+  -H "Authorization: Bearer <access_token>"
+
+# 3. Use the refresh token to update the access token
+curl -X POST http://localhost:8000/api/token/refresh/ \
+  -H "Content-Type: application/json" \
+  -d '{"refresh":"<refresh_token>"}'
+```
 
 ### 🔐 Auth
 
@@ -92,7 +118,7 @@ Refreshes the access token.
 
 ### 📋 Tasks
 
-> [!important]
+> \[!important]
 > All endpoints below require authentication with:
 >
 > ```
@@ -127,7 +153,7 @@ Updates a task (e.g., to mark as completed).
 }
 ```
 
-> [!note]
+> \[!note]
 > Operation supports partial update (e.g., you can specify only `status`)
 
 #### `DELETE /tasks/<int:pk>/`
@@ -136,13 +162,73 @@ Deletes a task
 
 ---
 
-## 🐳 Run with Docker
+## 🌐 Frontend (SvelteKit)
+
+Built with SvelteKit, TypeScript, Bun/NPM, and UI libraries:
+
+- **shadcn‑svelte**, **bits‑ui** for accessible UI components
+- Full **SSR**, using `Form Actions`
+- `HttpOnly` cookies for tokens — secure & not accessible via JS
+
+### 🔒 Auth & Flow
+
+- Login / register on `/auth` using form `action`
+- Tokens set in secure cookies, authenticated SSR requests to backend
+- Refresh middleware in `+layout.server.ts` automatically refreshes access tokens
+- All API requests via `lib/api.server.ts`, passing `cookies` securely
+
+### 💻 Local Dev Setup
+
+Install dependencies and run the frontend dev server:
+
+- NPM
+  ```bash
+  cd frontend
+  npm install
+  npm run dev
+  ```
+- Bun
+  ```bash
+  cd frontend
+  bun install
+  bun run dev
+  ```
+
+Visit: [http://localhost:3000](http://localhost:3000)
+
+The frontend expects Django to be running at `http://localhost:8000`. You can change this in the `.env` file.
+
+### 🛠 Environment Example
+
+- Manual (`frontend/.env`)
+
+  ```env
+  VITE_API_BASE_URL=http://localhost:8000
+  ```
+
+- Docker (`frontend/.env.production`)
+
+  ```env
+  VITE_API_BASE_URL=http://backend:8000
+  ```
+
+> [!note]
+> This only affects `fetch` during SSR — you don’t need to set tokens manually.
+
+---
+
+## 🐳 Running with Docker
 
 ```bash
-docker compose up --build
+docker-compose up --build
 ```
 
-Then visit: [http://localhost:8000](http://localhost:8000)
+- **Backend**: [http://localhost:8000](http://localhost:8000)
+  (runs via Gunicorn in production, manage.py in dev)
+- **Frontend**: [http://localhost:3000](http://localhost:3000)
+  (built and served by SvelteKit via Node)
+
+To leverage SSR + cookie auth, run frontend with `npm run dev` or `bun run dev` locally.
 
 ---
 
@@ -151,7 +237,7 @@ Then visit: [http://localhost:8000](http://localhost:8000)
 **With Docker:**
 
 ```bash
-docker compose -f compose.test.yml run --rm test
+docker compose -f compose.test.yml run --rm test # or docker-compose -f compose.test.yml run --rm test
 ```
 
 **Or Locally:**
@@ -162,14 +248,15 @@ pytest
 
 ---
 
-## 🔐 Environment Setup
+## 🔐 Environment Example
 
-Use `.env.example` as a starting point (don't forget to rename to `.env`):
+**backend `.env`:**
 
 ```env
-DEBUG=True
+DEBUG=False
 SECRET_KEY=your-secret-key
-ALLOWED_HOSTS=localhost,127.0.0.1
+ALLOWED_HOSTS=localhost,127.0.0.1,frontend
+CORS_ALLOWED_ORIGINS=http://localhost:3000,http://frontend:3000
 
 POSTGRES_DB=todo_list
 POSTGRES_USER=youruser
@@ -178,10 +265,22 @@ POSTGRES_HOST=postgres_db
 POSTGRES_PORT=5432
 ```
 
+**frontend `.env`:**
+
+```env
+VITE_API_BASE_URL=http://localhost:8000
+```
+
+For Docker, use:
+
+```env
+VITE_API_BASE_URL=http://backend:8000
+```
+
 > [!note]
 >
 > 1. You can either remove `SECRET_KEY` or use [djecrety.ir](https://djecrety.ir/) to generate it
-> 2. Set `0.0.0.0` in `ALLOWED_HOSTS` to run **Docker** (or `127.0.0.1` for **manual setup**)
+> 2. Make sure `POSTGRES_HOST` is `localhost` for manul **or** `postgres_db` for Docker
 
 ---
 

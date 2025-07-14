@@ -1,44 +1,38 @@
 import type { PageServerLoad } from "./$types";
-import type { Actions } from "./$types";
-import { fail } from "@sveltejs/kit";
+import * as z from "zod";
 
-import { createTask, deleteTask, getTasks } from "$lib/api.server";
+import { getTasks } from "$lib/api.server";
+import { error } from "@sveltejs/kit";
+
+const querySchema = z.object({
+  page: z.coerce.number().min(1).default(1),
+  status: z.enum(["New", "In Progress", "Completed", "All"]).default("All"),
+});
 
 export const load: PageServerLoad = async ({ url, cookies }) => {
-  const status = url.searchParams.get("status") || undefined;
-  const response = await getTasks(cookies, status);
-  return {
-    tasks: response.results,
-  };
+  const query = querySchema.safeParse({
+    page:
+      url.searchParams.get("page") === null
+        ? undefined
+        : Number(url.searchParams.get("page")),
+    status: url.searchParams.get("status") ?? undefined,
+  });
+
+  if (!query.success) {
+    throw error(400, { message: "Invalid query parameters" });
+  }
+
+  const { page, status } = query.data;
+
+  try {
+    const response = await getTasks(cookies, { page, status });
+    return {
+      page,
+      status,
+      count: response.count,
+      tasks: response.results,
+    };
+  } catch (err: any) {
+    throw error(500, { message: "Failed to fetch tasks" });
+  }
 };
-
-export const actions = {
-  create: async ({ request, cookies }) => {
-    const data = await request.formData();
-    const title = data.get("title") as string;
-    const description = data.get("description") as string;
-    const status = "New" as "New" | "In Progress" | "Completed";
-
-    try {
-      await createTask(cookies, { title, description, status });
-      return { success: true };
-    } catch (err: any) {
-      return JSON.parse(err.message);
-    }
-  },
-  delete: async ({ request, cookies }) => {
-    const data = await request.formData();
-    const id = data.get("id");
-
-    if (!id) {
-      return fail(400, { error: "Missing task ID" });
-    }
-
-    try {
-      await deleteTask(cookies, Number(id));
-      return { success: true };
-    } catch (err: any) {
-      return fail(400, JSON.parse(err.message));
-    }
-  },
-} satisfies Actions;

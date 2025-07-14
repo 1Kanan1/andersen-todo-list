@@ -1,9 +1,8 @@
 services:
-  app:
+  backend:
     build:
       context: .
       dockerfile: Dockerfile
-    image: andersen_todo_list
     env_file:
       - .env
     networks:
@@ -15,8 +14,19 @@ services:
     command: >
       sh -c "
       python manage.py migrate &&
-      python manage.py runserver 0.0.0.0:8000
+      gunicorn config.wsgi -b 0.0.0.0:8000
       "
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    networks:
+      - app_network
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
 
   postgres_db:
     image: postgres:17-alpine
