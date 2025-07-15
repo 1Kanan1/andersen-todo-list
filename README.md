@@ -164,6 +164,17 @@ Deletes a task
 
 ---
 
+## 📥 Getting Started
+
+Clone the repo:
+
+```bash
+git clone https://github.com/your-username/andersen-todo-list.git
+cd andersen-todo-list
+```
+
+---
+
 ## 🌐 Frontend (SvelteKit)
 
 Built with SvelteKit, TypeScript, Bun/NPM, and UI libraries:
@@ -282,7 +293,7 @@ VITE_API_BASE_URL=http://backend:8000
 > [!note]
 >
 > 1. You can either remove `SECRET_KEY` or use [djecrety.ir](https://djecrety.ir/) to generate it
-> 2. Make sure `POSTGRES_HOST` is `localhost` for manul **or** `postgres_db` for Docker
+> 2. Make sure `POSTGRES_HOST` is `localhost` for manual **or** `postgres_db` for Docker
 
 ---
 
