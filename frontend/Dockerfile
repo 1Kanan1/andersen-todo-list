@@ -9,7 +9,7 @@ RUN npm ci
 COPY . .
 
 RUN npm run build
-RUN npm prune --production
+RUN npm prune --omit=dev
 
 # Production image
 FROM node:24-alpine

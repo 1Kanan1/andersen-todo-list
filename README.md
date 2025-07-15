@@ -233,7 +233,7 @@ The frontend expects Django to be running at `http://localhost:8000`. You can ch
 ## 🐳 Running with Docker
 
 ```bash
-docker-compose up --build
+docker compose up --build # or docker-compose up --build
 ```
 
 - **Backend**: [http://localhost:8000](http://localhost:8000)
