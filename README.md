@@ -1,5 +1,7 @@
 # 📝 Andersen TODO List
 
+![Light](./screenshots/list-light.jpg)
+
 A minimal Django + DRF backend for personal task management with JWT auth — now with a modern SvelteKit frontend.
 
 ---
@@ -298,3 +300,19 @@ cp .env.example .env
 python manage.py migrate
 python manage.py runserver
 ```
+
+---
+
+## 🎨 UI Previews
+
+| Login                             | Signup                              |
+| --------------------------------- | ----------------------------------- |
+| ![Login](./screenshots/login.jpg) | ![Signup](./screenshots/signup.jpg) |
+
+| Task List (Light)                      | Task List (Dark)                     |
+| -------------------------------------- | ------------------------------------ |
+| ![Light](./screenshots/list-light.jpg) | ![Dark](./screenshots/list-dark.jpg) |
+
+| Create Task                         | Filter Task                         |
+| ----------------------------------- | ----------------------------------- |
+| ![Create](./screenshots/create.jpg) | ![Update](./screenshots/filter.jpg) |
