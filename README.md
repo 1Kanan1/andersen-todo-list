@@ -268,7 +268,7 @@ pytest
 ```env
 DEBUG=False
 SECRET_KEY=your-secret-key
-ALLOWED_HOSTS=localhost,127.0.0.1,frontend
+ALLOWED_HOSTS=localhost,127.0.0.1,backend
 CORS_ALLOWED_ORIGINS=http://localhost:3000,http://frontend:3000
 
 POSTGRES_DB=todo_list
