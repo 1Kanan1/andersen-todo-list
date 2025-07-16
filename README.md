@@ -32,7 +32,7 @@ A minimal Django + DRF backend for personal task management with JWT auth — no
 | ✅ Task CRUD       | Create, read, update, delete tasks (owner-only)         |
 | 📊 Filter & Status | Filter tasks by `"New"`, `"In Progress"`, `"Completed"` |
 | 📄 Pagination      | DRF pagination (`PAGE_LIMIT = 10`)                      |
-| 🌐 Svelte Frontend | Fully SSR-capable frontend with secure HttpOnly cookies |
+| 🌐 Svelte Frontend | Frontend with secure HttpOnly cookies                   |
 | 🎨 UI Components   | Built with shadcn‑svelte & bits‑ui                      |
 | 🐳 Docker Support  | Dev & test containers                                   |
 | 🧪 Test Suite      | `pytest` for backend (also runnable inside Docker)      |
@@ -175,20 +175,48 @@ cd andersen-todo-list
 
 ---
 
+## 🔐 Environment Example
+
+**backend `.env`:**
+
+```env
+DEBUG=False
+SECRET_KEY=your-secret-key
+ALLOWED_HOSTS=localhost,127.0.0.1,backend
+CORS_ALLOWED_ORIGINS=http://localhost:3000,
+
+POSTGRES_DB=todo_list
+POSTGRES_USER=youruser
+POSTGRES_PASSWORD=yourpass
+POSTGRES_HOST=postgres_db
+POSTGRES_PORT=5432
+```
+
+**frontend _local_ `.env` or _Docker_ `.env.production`:**
+
+```env
+PUBLIC_API_BASE_URL=http://localhost:8000
+```
+
+> [!note]
+>
+> 1. You can either remove `SECRET_KEY` or use [djecrety.ir](https://djecrety.ir/) to generate it
+> 2. Make sure `POSTGRES_HOST` is `localhost` for manual **or** `postgres_db` for Docker
+
+---
+
 ## 🌐 Frontend (SvelteKit)
 
 Built with SvelteKit, TypeScript, Bun/NPM, and UI libraries:
 
 - **shadcn‑svelte**, **bits‑ui** for accessible UI components
-- Full **SSR**, using `Form Actions`
-- `HttpOnly` cookies for tokens — secure & not accessible via JS
+- `HttpOnly` cookie for refresh token — secure & not accessible via JS
 
 ### 🔒 Auth & Flow
 
 - Login / register on `/auth` using form `action`
 - Tokens set in secure cookies, authenticated SSR requests to backend
 - Refresh middleware in `+layout.server.ts` automatically refreshes access tokens
-- All API requests via `lib/api.server.ts`, passing `cookies` securely
 
 ### 💻 Local Dev Setup
 
@@ -210,23 +238,6 @@ Install dependencies and run the frontend dev server:
 Visit: [http://localhost:3000](http://localhost:3000)
 
 The frontend expects Django to be running at `http://localhost:8000`. You can change this in the `.env` file.
-
-### 🛠 Environment Example
-
-- Manual (`frontend/.env`)
-
-  ```env
-  VITE_API_BASE_URL=http://localhost:8000
-  ```
-
-- Docker (`frontend/.env.production`)
-
-  ```env
-  VITE_API_BASE_URL=http://backend:8000
-  ```
-
-> [!note]
-> This only affects `fetch` during SSR — you don’t need to set tokens manually.
 
 ---
 
@@ -258,42 +269,6 @@ docker compose -f compose.test.yml run --rm test # or docker-compose -f compose.
 ```bash
 pytest
 ```
-
----
-
-## 🔐 Environment Example
-
-**backend `.env`:**
-
-```env
-DEBUG=False
-SECRET_KEY=your-secret-key
-ALLOWED_HOSTS=localhost,127.0.0.1,backend
-CORS_ALLOWED_ORIGINS=http://localhost:3000,http://frontend:3000
-
-POSTGRES_DB=todo_list
-POSTGRES_USER=youruser
-POSTGRES_PASSWORD=yourpass
-POSTGRES_HOST=postgres_db
-POSTGRES_PORT=5432
-```
-
-**frontend `.env`:**
-
-```env
-VITE_API_BASE_URL=http://localhost:8000
-```
-
-For Docker, use:
-
-```env
-VITE_API_BASE_URL=http://backend:8000
-```
-
-> [!note]
->
-> 1. You can either remove `SECRET_KEY` or use [djecrety.ir](https://djecrety.ir/) to generate it
-> 2. Make sure `POSTGRES_HOST` is `localhost` for manual **or** `postgres_db` for Docker
 
 ---
 
