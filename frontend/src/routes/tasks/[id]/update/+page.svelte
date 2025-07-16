@@ -8,17 +8,49 @@
     import { Input } from "$lib/components/ui/input/index";
     import Icon from "@iconify/svelte";
 
-    import { superForm } from "sveltekit-superforms";
+    import { setError, superForm } from "sveltekit-superforms";
     import { zod4Client } from "sveltekit-superforms/adapters";
     import { taskSchema } from "../schema";
+    import { goto } from "$app/navigation";
+    import { PUBLIC_API_BASE_URL } from "$env/static/public";
 
     let { data }: PageProps = $props();
 
     const form = superForm(data.form, {
         validators: zod4Client(taskSchema),
+        SPA: true,
+        onUpdate: async ({ form: validated, result }) => {
+            if (!validated.valid) return;
+            try {
+                const res = await fetch(
+                    `${PUBLIC_API_BASE_URL}/tasks/${data.id}/`,
+                    {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${sessionStorage.getItem("access_token")}`,
+                        },
+                        body: JSON.stringify(validated.data),
+                    },
+                );
+
+                if (!res.ok) {
+                    const error = await res.json().catch(() => ({}));
+                    throw new Error(JSON.stringify(error));
+                }
+
+                await goto("/");
+            } catch (err: any) {
+                const parsed = JSON.parse(err.message || "{}");
+                if (parsed.detail) {
+                    result.type = "failure";
+                    setError(validated, "", parsed.detail);
+                }
+            }
+        },
     });
 
-    const { form: formData, enhance: formEnhance, errors } = form;
+    const { form: formData, enhance, errors } = form;
 </script>
 
 <svelte:head>
@@ -30,7 +62,7 @@
         <Card.Title>Create Task</Card.Title>
     </Card.Header>
     <Card.Content>
-        <form method="POST" action="?/update" use:formEnhance>
+        <form use:enhance>
             <Form.Field {form} name="title" class="mt-2">
                 <Form.Control>
                     {#snippet children({ props })}

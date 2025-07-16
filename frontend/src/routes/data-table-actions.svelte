@@ -4,17 +4,22 @@
     import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
     import { goto, invalidateAll } from "$app/navigation";
     import { fail } from "@sveltejs/kit";
+    import { PUBLIC_API_BASE_URL } from "$env/static/public";
 
     let { id }: { id: string } = $props();
 
     async function handleDelete() {
         try {
-            const response = await fetch(`/tasks/${id}/delete`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
+            const response = await fetch(
+                `${PUBLIC_API_BASE_URL}/tasks/${id}/`,
+                {
+                    method: "DELETE",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${sessionStorage.getItem("access_token")}`,
+                    },
                 },
-            });
+            );
 
             if (!response.ok) {
                 const errorData = await response.json();

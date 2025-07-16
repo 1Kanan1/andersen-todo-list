@@ -1,21 +1,50 @@
 <script lang="ts">
-    import type { PageProps } from "../$types";
+    import type { PageProps } from "./$types";
 
     import * as Alert from "$lib/components/ui/alert/index";
     import * as Form from "$lib/components/ui/form/index";
     import { Input } from "$lib/components/ui/input/index";
     import Icon from "@iconify/svelte";
-    import { superForm } from "sveltekit-superforms";
+    import { setError, superForm } from "sveltekit-superforms";
     import { zod4Client } from "sveltekit-superforms/adapters";
     import { loginSchema } from "../schema";
+    import { PUBLIC_API_BASE_URL } from "$env/static/public";
 
     let { data }: PageProps = $props();
 
     const form = superForm(data.form, {
         validators: zod4Client(loginSchema),
+        SPA: true,
+        onUpdate: async ({ form: validated, result }) => {
+            if (!validated.valid) return;
+            try {
+                const res = await fetch(`${PUBLIC_API_BASE_URL}/api/token/`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    credentials: "include",
+                    body: JSON.stringify(validated.data),
+                });
+
+                if (!res.ok) {
+                    const error = await res.json().catch(() => ({}));
+                    throw new Error(JSON.stringify(error));
+                }
+
+                const { access } = await res.json();
+                sessionStorage.setItem("access_token", access);
+            } catch (err: any) {
+                const parsed = JSON.parse(err.message || "{}");
+                if (parsed.detail) {
+                    result.type = "failure";
+                    setError(validated, "", parsed.detail);
+                }
+            }
+        },
     });
 
-    const { form: formData, enhance: formEnhance, errors } = form;
+    const { form: formData, enhance, errors } = form;
 
     let showPassword = $state(false);
 </script>
@@ -24,7 +53,7 @@
     <title>Sign in</title>
 </svelte:head>
 
-<form method="POST" use:formEnhance action="?/login" class="space-y-4">
+<form use:enhance class="space-y-4">
     <Form.Field {form} name="username" class="mt-2">
         <Form.Control>
             {#snippet children({ props })}

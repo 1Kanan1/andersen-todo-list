@@ -1,11 +1,13 @@
 <script lang="ts">
-    import type { PageProps } from "../$types";
+    import type { PageProps } from "./$types";
+    import { goto } from "$app/navigation";
+    import { PUBLIC_API_BASE_URL } from "$env/static/public";
 
     import * as Alert from "$lib/components/ui/alert/index";
     import * as Form from "$lib/components/ui/form/index";
     import { Input } from "$lib/components/ui/input/index";
     import Icon from "@iconify/svelte";
-    import { superForm } from "sveltekit-superforms";
+    import { setError, superForm } from "sveltekit-superforms";
     import { zod4Client } from "sveltekit-superforms/adapters";
     import { signupSchema } from "../schema";
 
@@ -13,9 +15,39 @@
 
     const form = superForm(data.form, {
         validators: zod4Client(signupSchema),
+        SPA: true,
+        onUpdate: async ({ form: validated, result }) => {
+            if (!validated.valid) return;
+            try {
+                const res = await fetch(
+                    `${PUBLIC_API_BASE_URL}/users/register/`,
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        credentials: "include",
+                        body: JSON.stringify(validated.data),
+                    },
+                );
+
+                await goto("/auth/login");
+                if (!res.ok) {
+                    const error = await res.json().catch(() => ({}));
+                    throw new Error(JSON.stringify(error));
+                }
+            } catch (err: any) {
+                const parsed = JSON.parse(err.message || "{}");
+                console.log(parsed);
+                if (parsed.username) {
+                    result.type = "failure";
+                    setError(validated, "", parsed.username);
+                }
+            }
+        },
     });
 
-    const { form: formData, enhance: formEnhance, errors } = form;
+    const { form: formData, enhance, errors } = form;
 
     let showPassword = $state(false);
 </script>
@@ -24,7 +56,7 @@
     <title>Sign up</title>
 </svelte:head>
 
-<form method="POST" use:formEnhance action="?/signup" class="space-y-4">
+<form use:enhance class="space-y-4">
     <Form.Field {form} name="first_name" class="mt-2">
         <Form.Control>
             {#snippet children({ props })}
