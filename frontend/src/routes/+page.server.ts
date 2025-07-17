@@ -1,17 +1,26 @@
-import type { PageLoad } from "./$types";
+import type { PageServerLoad } from "./$types";
 import * as z from "zod";
 
 import { error } from "@sveltejs/kit";
-import { PUBLIC_API_BASE_URL } from "$env/static/public";
+import { getTasks } from "$lib/api.server";
 
 const querySchema = z.object({
   page: z.coerce.number().min(1).default(1),
   status: z.enum(["New", "In Progress", "Completed", "All"]).default("All"),
 });
 
-export const ssr = false;
-
-export const load: PageLoad = async ({ url, fetch }) => {
+export const load: PageServerLoad = async ({
+  parent,
+  url,
+  fetch,
+  cookies,
+}: {
+  parent: any;
+  url: any;
+  fetch: any;
+  cookies: any;
+}) => {
+  await parent();
   const query = querySchema.safeParse({
     page:
       url.searchParams.get("page") === null
@@ -30,20 +39,7 @@ export const load: PageLoad = async ({ url, fetch }) => {
   );
 
   try {
-    const res = await fetch(`${PUBLIC_API_BASE_URL}/tasks/?${searchParams}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${sessionStorage.getItem("access_token")}`,
-      },
-    });
-
-    if (!res.ok) {
-      const error = await res.json().catch(() => ({}));
-      throw error(JSON.stringify(error));
-    }
-
-    const data = await res.json();
+    const data = await getTasks(searchParams, fetch, cookies);
 
     return {
       page,

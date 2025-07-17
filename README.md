@@ -32,7 +32,7 @@ A minimal Django + DRF backend for personal task management with JWT auth — no
 | ✅ Task CRUD       | Create, read, update, delete tasks (owner-only)         |
 | 📊 Filter & Status | Filter tasks by `"New"`, `"In Progress"`, `"Completed"` |
 | 📄 Pagination      | DRF pagination (`PAGE_LIMIT = 10`)                      |
-| 🌐 Svelte Frontend | Frontend with secure HttpOnly cookies                   |
+| 🌐 Svelte Frontend | Fully SSR-capable frontend with secure HttpOnly cookies |
 | 🎨 UI Components   | Built with shadcn‑svelte & bits‑ui                      |
 | 🐳 Docker Support  | Dev & test containers                                   |
 | 🧪 Test Suite      | `pytest` for backend (also runnable inside Docker)      |
@@ -183,7 +183,7 @@ cd andersen-todo-list
 DEBUG=False
 SECRET_KEY=your-secret-key
 ALLOWED_HOSTS=localhost,127.0.0.1,backend
-CORS_ALLOWED_ORIGINS=http://localhost:3000,
+CORS_ALLOWED_ORIGINS=http://localhost:3000,http://frontend:3000
 
 POSTGRES_DB=todo_list
 POSTGRES_USER=youruser
@@ -192,11 +192,19 @@ POSTGRES_HOST=postgres_db
 POSTGRES_PORT=5432
 ```
 
-**frontend _local_ `.env` or _Docker_ `.env.production`:**
+**frontend**:
 
-```env
-PUBLIC_API_BASE_URL=http://localhost:8000
-```
+- Local (`.env`):
+
+  ```env
+  API_BASE_URL=http://localhost:8000
+  ```
+
+- Docker (`.env.production`):
+
+  ```env
+  API_BASE_URL=http://frontend:8000
+  ```
 
 > [!note]
 >
@@ -210,7 +218,8 @@ PUBLIC_API_BASE_URL=http://localhost:8000
 Built with SvelteKit, TypeScript, Bun/NPM, and UI libraries:
 
 - **shadcn‑svelte**, **bits‑ui** for accessible UI components
-- `HttpOnly` cookie for refresh token — secure & not accessible via JS
+- Full **SSR**, using `Form Actions`
+- `HttpOnly` cookies for tokens — secure & not accessible via JS
 
 ### 🔒 Auth & Flow
 
