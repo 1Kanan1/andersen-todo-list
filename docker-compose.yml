@@ -10,7 +10,9 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      - postgres_db
+      postgres_db:
+        # Check if Postgres is ready before connecting
+        condition: service_healthy
     command: >
       sh -c "
       python manage.py migrate &&
@@ -39,6 +41,12 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - app_network
+    # NOTE: Use to give Postgres time to boot in Docker; Podman can compose without it
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "$POSTGRES_USER", "-d", "$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 networks:
   app_network:
